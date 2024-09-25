@@ -14,13 +14,13 @@ Arrays - unlikely
 Recursion - unlikely
 P - Plan
 Write out in plain English what you want to do:
-Using an approach similar to a two pointer approach for string reversal, we create a dummy node whose next points to the head node of our list.
-We create another variable prev which points to the same node as dummy at first. Then, we iterate through our list. At each iteration, we
-make the prev node point to the second node. This makes the second node first in that sequence instead. I.e. dummy -> 1 is changed to dummy -> 2.
+Using an approach similar to a two pointer approach for string reversal, we create a temp node whose next points to the head node of our list.
+We create another variable prev which points to the same node as temp at first. Then, we iterate through our list. At each iteration, we
+make the prev node point to the second node. This makes the second node first in that sequence instead. I.e. temp -> 1 is changed to temp -> 2.
 Next, we make the first node point to the next node of the second node. I.e. 1 -> 2 is changed to 1 -> 3. Lastly, we change the next of the second
 node to make to the first node. I.e. 2 -> 3 is changed to 2 -> 1.
-The end result is dummy -> 1 -> 2 -> 3 -> 4 is changed to dummy -> 2 -> 1 -> 3 -> 4.
-We iterate through the linked list like this until we reach the end and return dummy.next.
+The end result is temp -> 1 -> 2 -> 3 -> 4 is changed to temp -> 2 -> 1 -> 3 -> 4.
+We iterate through the linked list like this until we reach the end and return temp.next.
 I - Implement
 Translate the pseudocode into Python and share your final answer:
 """
@@ -30,10 +30,10 @@ class Solution(object):
         :type head: ListNode
         :rtype: ListNode
         """ 
-        # Dummy node to handle the head swap case easily
-        dummy = ListNode(0)
-        dummy.next = head
-        prev = dummy
+        # temp node to handle the head swap case easily
+        temp = ListNode(0)
+        temp.next = head
+        prev = temp
 
         while head and head.next:
             # Nodes to be swapped
@@ -49,7 +49,7 @@ class Solution(object):
             prev = first
             head = first.next
 
-        return dummy.next
+        return temp.next
 
 """
 RE - Review and Evaluate
