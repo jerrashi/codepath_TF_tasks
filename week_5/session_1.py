@@ -170,3 +170,55 @@ Strength(s):
 Weakness(es):
 - we use a helper function, which may not be allowed by the interviewer or in an online assessment context
 """
+
+"""
+Problem 3:
+Given two integer arrays pushed and popped each with distinct values, return true if this could have been the result of a sequence of push and 
+pop operations on an initially empty stack, or false otherwise.
+
+U - Understand
+1) Do we have any time / space constraints to be aware of?
+2) Are we allowed to create any additional data structures (i.e. lists)?
+
+M - Match
+List out 2-3 types of problems that we might consider and likelihood of match: Likely, Neutral, Unlikely. e.g. Linked List = Likely, Stack = Unlikely
+Arrays - likely
+Stacks - likely
+Sorting - unlikely
+
+P - Plan
+Write out in plain English what you want to do:
+Using a list/dynamic array in python to implement a stack, we can append each item in the push array to the stack. At the same time, we check the 
+top of the stack against the beginning of the pop array. If the elements match, we pop that element and move on in the pop array.
+
+I - Implement
+Translate the pseudocode into Python and share your final answer:
+"""
+class Solution(object):
+    def validateStackSequences(self, pushed, popped):
+        stack = []
+        j = 0  # Pointer for the popped array
+
+        for value in pushed:
+            stack.append(value)  # Push onto the stack
+            # Keep popping while the top of the stack matches the popped sequence
+            while stack and stack[-1] == popped[j]:
+                stack.pop()
+                j += 1  # Move to the next element in the popped array
+
+        # If all elements in popped were matched, the stack should be empty
+        return not stack
+
+"""
+RE - Review and Evaluate
+Run your code. Evaluate the performance of your algorithm and share at least one strong/weak or future potential work.
+O(n) time complexity
+O(n) space complexity
+
+Strength(s):
+- linear time and space complexity
+
+Weakness(es):
+- it is possible to improve space complexity by using the pushed input array
+"""
+
