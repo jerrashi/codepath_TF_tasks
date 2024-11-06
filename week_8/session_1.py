@@ -163,90 +163,74 @@ class Solution(object):
 
 """
 Problem 2:
-There are a total of numCourses courses you have to take, labeled from 0 to numCourses - 1. You are given an array prerequisites where 
-prerequisites[i] = [ai, bi] indicates that you must take course ai first if you want to take course bi.
+Given the root of a binary tree and an integer targetSum, return all root-to-leaf paths where the sum of the node values in the path equals 
+targetSum. Each path should be returned as a list of the node values, not node references.
 
-For example, the pair [0, 1] indicates that you have to take course 0 before you can take course 1.
-Prerequisites can also be indirect. If course a is a prerequisite of course b, and course b is a prerequisite of course c, then course a is a 
-prerequisite of course c.
-
-You are also given an array queries where queries[j] = [uj, vj]. For the jth query, you should answer whether course uj is a prerequisite of course 
-vj or not.
-
-Return a boolean array answer, where answer[j] is the answer to the jth query.
+A root-to-leaf path is a path starting from the root and ending at any leaf node. A leaf is a node with no children.
 
 U - Understand
-1) What do we do if we are given an empty array?
-2) Will this graph have cycles?
+1) Does the order of nodes returned matter?
+2) Are all node values non-negative?
 
 M - Match
 List out 2-3 types of problems that we might consider and likelihood of match: Likely, Neutral, Unlikely. e.g. Linked List = Likely, Stack = Unlikely
-Topological sort - likely
 BFS - likely
 DFS - likely
+Union Find - unlikely
 
 P - Plan
 Write out in plain English what you want to do:
-For this problem, we can also use topological sort in a similar approach to the first question. Instead of returning a sorted array of the graph,
-though, we will create a pre-requisite map of each course that takes into account courses further down the road. For example, if A is a pre-requisite
-of B, we will add A to the pre-requisites map for B but also for C if B is a pre-requisite for C. Then, we will check is A is a pre-requisite of C
-by checking if it is in the set of pre-requisites for C when we need to check each query.
+For this problem, we can use DFS or BFS and store the sum along each path. When we reach the amount and are at a leaf node, we append the route we
+took to the results.
 
 I - Implement
 Translate the pseudocode into Python and share your final answer:
-BFS approach
 """
+# Definition for a binary tree node.
+# class TreeNode(object):
+#     def __init__(self, val=0, left=None, right=None):
+#         self.val = val
+#         self.left = left
+#         self.right = right
 class Solution(object):
-    from collections import defaultdict, deque
-
-    def checkIfPrerequisite(self, numCourses, prerequisites, queries):
+    def pathSum(self, root, targetSum):
         """
-        :type numCourses: int
-        :type prerequisites: List[List[int]]
-        :type queries: List[List[int]]
-        :rtype: List[bool]
+        :type root: Optional[TreeNode]
+        :type targetSum: int
+        :rtype: List[List[int]]
         """
-        # Step 1: Initialize adjacency list and prerequisites map
-        indegree = [0] * numCourses
-        adj = defaultdict(set)  # Adjacency list (graph)
-        prerequisitesMap = defaultdict(set)  # Stores all prerequisites for each course
-
-        # Step 2: Build the graph and calculate indegrees
-        for [course, pre] in prerequisites:
-            adj[course].add(pre)
-            indegree[pre] += 1
-
-        # Step 3: Initialize the queue with courses having zero indegree
-        queue = deque([i for i in range(numCourses) if indegree[i] == 0])
-
-        # Step 4: Perform BFS to populate the prerequisitesMap
-        while queue:
-            node = queue.popleft()
-            for next_course in adj[node]:
-                # Add current node and its prerequisites to the next course's prerequisite set
-                prerequisitesMap[next_course].add(node)
-                prerequisitesMap[next_course].update(prerequisitesMap[node])
-
-                # Decrease the indegree and add to the queue if it becomes 0
-                indegree[next_course] -= 1
-                if indegree[next_course] == 0:
-                    queue.append(next_course)
-
-        # Step 5: Answer the queries using the prerequisitesMap
         result = []
-        for u, v in queries:
-            result.append(u in prerequisitesMap[v])
 
+        def dfs(node, current_path, current_sum):
+            if not node:
+                return
+            
+            # Add the current node to the path
+            current_path.append(node.val)
+            current_sum += node.val
+            
+            # Check if we've reached a leaf node with the target sum
+            if not node.left and not node.right and current_sum == targetSum:
+                result.append(list(current_path))  # Append a copy of the path
+            
+            # Recursively explore left and right children
+            dfs(node.left, current_path, current_sum)
+            dfs(node.right, current_path, current_sum)
+            
+            # Backtrack
+            current_path.pop()
+        
+        dfs(root, [], 0)
         return result
 """
 RE - Review and Evaluate
 Run your code. Evaluate the performance of your algorithm and share at least one strong/weak or future potential work.
-O(V+E) time complexity where V is the number of classes and E is the number of pre-requisites
-O(V^2) space complexity since we store pre-requisites transitively for each class
+O(n) time complexity where n is the number of nodes
+O(h) space complexity where h is the height of the tree
 
 Strength(s):
-- reinforces topological sort approach
+- linear time complexity
 
 Weakness(es):
-- O(V^2) space complexity gets unwieldy for larger inputs
+- space complexity doesn't scale as well
 """
