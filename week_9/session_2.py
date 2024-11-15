@@ -17,198 +17,127 @@ Backtracking - likely
 
 P - Plan
 Write out in plain English what you want to do:
-This problem is a classic example of a backtracking algorithm. If we think about the problem intuitively/manually
+This problem is a classic example of a backtracking algorithm. If we think about the problem intuitively/manually, we would look through the grid 
+cell by cell, letter by letter. At each cell, we would check if it matches the first letter of the word we are looking for. If it does, we will keep
+going and look at the neighboring cells. Once we find the letters that match with what letter we are looking for, we keep going until we have found
+the whole word, and then return true. If we traverse the whole grid and don't find the word, then we return false.
+To implement this in code, we write a dfs function. We will run the dfs at every cell in the grid by iterating over all the columns and arrays. If
+the cell we are at does not match the letter in the word we are looking for, we return false. Otherwise, mark the cell as visited and then we perform
+depth first search and look through every neighboring cell.
 
 I - Implement
 Translate the pseudocode into Python and share your final answer:
 """
 class Solution(object):
-    from collections import defaultdict
+    def exist(self, board, word):
+        """
+        :type board: List[List[str]]
+        :type word: str
+        :rtype: bool
+        """
+        rows, cols = len(board), len(board[0])
+        
+        def dfs(r, c, index):
+            # Base case: if index matches the length of the word, we've found the word
+            if index == len(word):
+                return True
+            # Check for out of bounds or mismatch
+            if r < 0 or r >= rows or c < 0 or c >= cols or board[r][c] != word[index]:
+                return False
+            
+            # Mark the cell as visited by storing its original value and setting it to a sentinel value
+            temp = board[r][c]
+            board[r][c] = '#'
+            
+            # Explore all four directions
+            found = (
+                dfs(r + 1, c, index + 1) or
+                dfs(r - 1, c, index + 1) or
+                dfs(r, c + 1, index + 1) or
+                dfs(r, c - 1, index + 1)
+            )
+            
+            # Unmark the cell (backtrack)
+            board[r][c] = temp
+            return found
 
-    def accountsMerge(self, accounts):
-        """
-        :type accounts: List[List[str]]
-        :rtype: List[List[str]]
-        """
-        # Step 1: Build the graph
-        email_graph = defaultdict(list)
-        email_to_name = {}
-        
-        # For each account, link all emails together and record the name
-        for account in accounts:
-            name = account[0]
-            first_email = account[1]
-            for email in account[1:]:
-                email_graph[first_email].append(email)
-                email_graph[email].append(first_email)
-                email_to_name[email] = name
-        
-        # Step 2: Perform DFS to find connected components
-        def dfs(email, emails):
-            visited.add(email)
-            emails.append(email)
-            for neighbor in email_graph[email]:
-                if neighbor not in visited:
-                    dfs(neighbor, emails)
-        
-        visited = set()
-        merged_accounts = []
-        
-        for email in email_graph:
-            if email not in visited:
-                # Collect all emails in the current connected component
-                emails = []
-                dfs(email, emails)
-                # Sort emails and add the name at the beginning
-                merged_accounts.append([email_to_name[email]] + sorted(emails))
-        
-        return merged_accounts
+        # Try to start DFS from each cell in the grid
+        for r in range(rows):
+            for c in range(cols):
+                if dfs(r, c, 0):  # Start DFS from (r, c) with index 0 of word
+                    return True
+        return False
 
 """
 RE - Review and Evaluate
 Run your code. Evaluate the performance of your algorithm and share at least one strong/weak or future potential work.
-O(nlogn) time complexity since dfs is almost O(n) and we sort each list of emails before appending it to the results
-O(n) space complexity since we store email_graph and email_to_name for each email address
+O(m*n*4^L) time complexity where m is number of rows and n is number of columns and L is the length of the word we are looking for
+O(L) space complexity where L is the length of the word we are looking for
 
 Strength(s):
-- utilizes DFS search
+- utilizes DFS search and backtracking, two key concepts of this week's lecture
 
 Weakness(es):
-- have to create additional data structures, which may be hard to remember and may not be allowed by interviewer
-
-Below is the Union Find Implementation:
+- we modify then revert the grid to save space but we might not be allowed to modify the input by the interviewer
 """
-class Solution(object):
-    from collections import defaultdict
-
-    class UnionFind:
-        def __init__(self):
-            self.parent = {}
-            self.rank = {}
-
-        def find(self, email):
-            if self.parent[email] != email:
-                self.parent[email] = self.find(self.parent[email])  # Path compression
-            return self.parent[email]
-
-        def union(self, email1, email2):
-            root1 = self.find(email1)
-            root2 = self.find(email2)
-            
-            if root1 != root2:
-                # Union by rank
-                if self.rank[root1] > self.rank[root2]:
-                    self.parent[root2] = root1
-                elif self.rank[root1] < self.rank[root2]:
-                    self.parent[root1] = root2
-                else:
-                    self.parent[root2] = root1
-                    self.rank[root1] += 1
-    def accountsMerge(self, accounts):
-        """
-        :type accounts: List[List[str]]
-        :rtype: List[List[str]]
-        """
-        uf = self.UnionFind()
-        email_to_name = {}
-
-        # Step 1: Initialize Union-Find structure and map emails to names
-        for account in accounts:
-            name = account[0]
-            first_email = account[1]
-            
-            # Make sure each email has an entry in Union-Find
-            for email in account[1:]:
-                if email not in uf.parent:
-                    uf.parent[email] = email
-                    uf.rank[email] = 0
-                uf.union(first_email, email)  # Union all emails with the first email
-                email_to_name[email] = name   # Map email to name
-
-        # Step 2: Group emails by their root parent
-        root_to_emails = defaultdict(list)
-        for email in uf.parent:
-            root_email = uf.find(email)
-            root_to_emails[root_email].append(email)
-
-        # Step 3: Format the result
-        merged_accounts = []
-        for emails in root_to_emails.values():
-            name = email_to_name[emails[0]]
-            merged_accounts.append([name] + sorted(emails))
-        
-        return merged_accounts
 
 """
 Problem 2:
-Given the root of a binary tree and an integer targetSum, return all root-to-leaf paths where the sum of the node values in the path equals 
-targetSum. Each path should be returned as a list of the node values, not node references.
-
-A root-to-leaf path is a path starting from the root and ending at any leaf node. A leaf is a node with no children.
+Given n pairs of parentheses, write a function to generate all combinations of well-formed parentheses.
 
 U - Understand
-1) Does the order of nodes returned matter?
+1) Does the order of parentheses returned matter?
 2) Are all node values non-negative?
 
 M - Match
 List out 2-3 types of problems that we might consider and likelihood of match: Likely, Neutral, Unlikely. e.g. Linked List = Likely, Stack = Unlikely
-BFS - likely
-DFS - likely
-Union Find - unlikely
+BFS - unlikely
+DFS - unlikely
+Backtracking - likely
 
 P - Plan
 Write out in plain English what you want to do:
-For this problem, we can use DFS or BFS and store the sum along each path. When we reach the amount and are at a leaf node, we append the route we
-took to the results.
+For this problem, we can use a backtracking approach. If we think about the problem intuitively/manually, we can have an open or close parentheses 
+at each position after the first. What are the requirements of each possibility? We need to have less open parentheses than the number we are 
+generating parentheses for to add an open parentheses. We need to have more open parentheses than closed parentheses to add a closed parentheses.
 
 I - Implement
 Translate the pseudocode into Python and share your final answer:
 """
-# Definition for a binary tree node.
-# class TreeNode(object):
-#     def __init__(self, val=0, left=None, right=None):
-#         self.val = val
-#         self.left = left
-#         self.right = right
 class Solution(object):
-    def pathSum(self, root, targetSum):
+    def generateParenthesis(self, n):
         """
-        :type root: Optional[TreeNode]
-        :type targetSum: int
-        :rtype: List[List[int]]
+        :type n: int
+        :rtype: List[str]
         """
-        result = []
-
-        def dfs(node, current_path, current_sum):
-            if not node:
+        def backtrack(s='', open_count=0, close_count=0):
+            # Base case: when the length of the string reaches 2*n, add it to results
+            if len(s) == 2 * n:
+                result.append(s)
                 return
             
-            # Add the current node to the path
-            current_path.append(node.val)
-            current_sum += node.val
+            # If the number of open parentheses is less than n, we can add an open parenthesis
+            if open_count < n:
+                backtrack(s + '(', open_count + 1, close_count)
             
-            # Check if we've reached a leaf node with the target sum
-            if not node.left and not node.right and current_sum == targetSum:
-                result.append(list(current_path))  # Append a copy of the path
-            
-            # Recursively explore left and right children
-            dfs(node.left, current_path, current_sum)
-            dfs(node.right, current_path, current_sum)
-            
-            # Backtrack
-            current_path.pop()
-        
-        dfs(root, [], 0)
+            # If the number of close parentheses is less than the number of open parentheses, we can add a close parenthesis
+            if close_count < open_count:
+                backtrack(s + ')', open_count, close_count + 1)
+
+        result = []
+        backtrack()
         return result
 """
 RE - Review and Evaluate
 Run your code. Evaluate the performance of your algorithm and share at least one strong/weak or future potential work.
-O(n) time complexity where n is the number of nodes
-O(h) space complexity where h is the height of the tree
+ O(4^n / sqrt(n)) time complexity where n is the input numbers. There are 2^n possible paths but not all paths are valid so instead we use the nth
+ Catalan number.
+ O(4^n / sqrt(n)) space complexity if we consider the space for result (since there are 4^n/sqrt(n) valid paths). If we are only considering the 
+ memory needed for the stack, we recurse up to a depth of O(2n) (since we will be configuring 6 parenthese for 3, and so onwhich simplifies to O(n).
 
 Strength(s):
-- linear time complexity
+- showcases backtracking in a simple and easy to understand way
 
 Weakness(es):
-- space complexity doesn't scale as well
+- time complexity is confusing to grasp
 """
